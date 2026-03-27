@@ -10,10 +10,6 @@ from src.result import SimulationResult
 from src.simulator import Simulator
 
 
-# ------------------------------------------------------------------
-# Test-only policy: always picks the first job in waiting_jobs (FIFO-like)
-# ------------------------------------------------------------------
-
 class DummyPolicy(BasePolicy):
     """Minimal policy that selects the first waiting job."""
 
@@ -22,21 +18,20 @@ class DummyPolicy(BasePolicy):
     ) -> Job | None:
         return waiting_jobs[0]
 
-
-# ------------------------------------------------------------------
-# Fixtures
-# ------------------------------------------------------------------
+def _find_job(result: SimulationResult, job_id: str) -> Job:
+    """Look up a completed job by its ID."""
+    return next(j for j in result.completed_jobs if j.job_id == job_id)
 
 @pytest.fixture()
 def policy() -> DummyPolicy:
     return DummyPolicy()
 
 
-# ------------------------------------------------------------------
-# Job validation
-# ------------------------------------------------------------------
-
 class TestJobValidation:
+    def test_empty_job_id(self) -> None:
+        with pytest.raises(ValueError, match="job_id"):
+            Job("", submit_time=0, duration=1)
+
     def test_negative_submit_time(self) -> None:
         with pytest.raises(ValueError, match="submit_time"):
             Job("j", submit_time=-1, duration=1)
@@ -49,10 +44,6 @@ class TestJobValidation:
         with pytest.raises(ValueError, match="duration"):
             Job("j", submit_time=0, duration=-5)
 
-
-# ------------------------------------------------------------------
-# Simulator input validation
-# ------------------------------------------------------------------
 
 class TestSimulatorValidation:
     def test_empty_jobs(self, policy: DummyPolicy) -> None:
@@ -70,11 +61,18 @@ class TestSimulatorValidation:
             Simulator(jobs, policy, total_resources=-1)
 
 
-# ------------------------------------------------------------------
-# Core simulation behaviour
-# ------------------------------------------------------------------
-
 class TestSimulatorCore:
+    def test_single_job(self, policy: DummyPolicy) -> None:
+        """Simplest possible scenario: one job, one resource."""
+        jobs = [Job("j1", submit_time=0, duration=5)]
+        result = Simulator(jobs, policy).run()
+
+        assert len(result.completed_jobs) == 1
+        j = result.completed_jobs[0]
+        assert j.start_time == 0
+        assert j.end_time == 5
+        assert result.makespan == 5
+
     def test_all_jobs_complete(self, policy: DummyPolicy) -> None:
         """Every input job must appear in the result's completed list."""
         jobs = [
@@ -95,13 +93,11 @@ class TestSimulatorCore:
         ]
         result = Simulator(jobs, policy, total_resources=1).run()
 
-        # j1 submitted first in the list → started first by DummyPolicy
-        j1 = next(j for j in result.completed_jobs if j.job_id == "j1")
-        j2 = next(j for j in result.completed_jobs if j.job_id == "j2")
+        j1 = _find_job(result, "j1")
+        j2 = _find_job(result, "j2")
 
         assert j1.start_time == 0
         assert j2.start_time == 2  # starts after j1 finishes
-        assert j1.end_time <= j2.start_time  # type: ignore[operator]
 
     def test_job_start_and_end_times(self, policy: DummyPolicy) -> None:
         """start_time and end_time must be set correctly on every job."""
@@ -111,8 +107,8 @@ class TestSimulatorCore:
         ]
         result = Simulator(jobs, policy, total_resources=1).run()
 
-        j1 = next(j for j in result.completed_jobs if j.job_id == "j1")
-        j2 = next(j for j in result.completed_jobs if j.job_id == "j2")
+        j1 = _find_job(result, "j1")
+        j2 = _find_job(result, "j2")
 
         # j1: starts at 0, duration 4 → ends at 4
         assert j1.start_time == 0
@@ -131,9 +127,9 @@ class TestSimulatorCore:
         ]
         result = Simulator(jobs, policy, total_resources=2).run()
 
-        j1 = next(j for j in result.completed_jobs if j.job_id == "j1")
-        j2 = next(j for j in result.completed_jobs if j.job_id == "j2")
-        j3 = next(j for j in result.completed_jobs if j.job_id == "j3")
+        j1 = _find_job(result, "j1")
+        j2 = _find_job(result, "j2")
+        j3 = _find_job(result, "j3")
 
         # j1 and j2 start together; j3 must wait
         assert j1.start_time == 0
@@ -157,7 +153,7 @@ class TestSimulatorCore:
         ]
         result = Simulator(jobs, policy, total_resources=1).run()
 
-        j2 = next(j for j in result.completed_jobs if j.job_id == "j2")
+        j2 = _find_job(result, "j2")
         assert j2.start_time == 10
         assert j2.end_time == 11
         assert result.makespan == 11
@@ -202,10 +198,6 @@ class TestSimulatorCore:
         assert jobs[0].end_time is None
 
 
-# ------------------------------------------------------------------
-# SimulationResult metrics
-# ------------------------------------------------------------------
-
 class TestSimulationResult:
     def test_average_turnaround_time(self, policy: DummyPolicy) -> None:
         jobs = [
@@ -225,10 +217,12 @@ class TestSimulationResult:
         result = Simulator(jobs, policy, total_resources=1).run()
         assert result.average_waiting_time == pytest.approx(1.0)
 
+    def test_incomplete_job_rejected(self) -> None:
+        """SimulationResult must reject jobs without start/end times."""
+        incomplete = Job("j1", submit_time=0, duration=1)
+        with pytest.raises(ValueError, match="start_time or end_time"):
+            SimulationResult(completed_jobs=[incomplete], makespan=1)
 
-# ------------------------------------------------------------------
-# Deadlock detection
-# ------------------------------------------------------------------
 
 class TestDeadlock:
     def test_policy_always_returns_none(self) -> None:

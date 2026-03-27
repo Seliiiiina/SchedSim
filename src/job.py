@@ -32,6 +32,8 @@ class Job:
     end_time: int | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
+        if not self.job_id:
+            raise ValueError("job_id must be a non-empty string")
         if self.submit_time < 0:
             raise ValueError(
                 f"submit_time must be >= 0, got {self.submit_time}"

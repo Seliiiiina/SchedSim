@@ -14,7 +14,7 @@ class BasePolicy(ABC):
     current simulation time and the set of jobs that are ready to run.
 
     Subclasses must override :meth:`select_job`.  They may carry internal
-    state (e.g. for round-robin tracking) but should **not** mutate the
+    state (e.g. for round-robin tracking) but should not mutate the
     jobs or the list that is passed in.
     """
 
@@ -32,6 +32,6 @@ class BasePolicy(ABC):
 
         Returns:
             The selected :class:`Job`, which must be an element of
-            *waiting_jobs*, or ``None`` to indicate that no job should
+            waiting_jobs, or ``None`` to indicate that no job should
             be started at this time.
         """
