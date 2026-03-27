@@ -24,7 +24,7 @@ class Simulator:
             job occupies exactly one slot.
 
     Raises:
-        ValueError: If *jobs* is empty or *total_resources* < 1.
+        ValueError: If jobs is empty or total_resources < 1.
     """
 
     def __init__(
@@ -51,10 +51,6 @@ class Simulator:
         self._running_jobs: list[Job] = []
         self._completed_jobs: list[Job] = []
         self._available_resources: int = total_resources
-
-    # ------------------------------------------------------------------
-    # Public API
-    # ------------------------------------------------------------------
 
     def run(self) -> SimulationResult:
         """Execute the simulation and return the result.
@@ -86,10 +82,6 @@ class Simulator:
             makespan=self._current_time,
         )
 
-    # ------------------------------------------------------------------
-    # Internal helpers
-    # ------------------------------------------------------------------
-
     def _reset(self) -> None:
         """Reset all mutable state so the simulator can be re-run."""
         self._current_time = 0
@@ -103,14 +95,20 @@ class Simulator:
         self._available_resources = self._total_resources
 
     def _add_arrived_jobs(self) -> None:
-        """Move pending jobs whose ``submit_time <= current_time`` into the waiting queue."""
-        still_pending: list[Job] = []
-        for job in self._pending_jobs:
-            if job.submit_time <= self._current_time:
-                self._waiting_jobs.append(job)
-            else:
-                still_pending.append(job)
-        self._pending_jobs = still_pending
+        """Move pending jobs whose ``submit_time <= current_time`` into the waiting queue.
+
+        ``_pending_jobs`` is kept sorted by ``submit_time``, so all
+        arrived jobs form a contiguous prefix — we can stop as soon as
+        we see one that hasn't arrived yet.
+        """
+        i = 0
+        while (
+            i < len(self._pending_jobs)
+            and self._pending_jobs[i].submit_time <= self._current_time
+        ):
+            i += 1
+        self._waiting_jobs.extend(self._pending_jobs[:i])
+        self._pending_jobs = self._pending_jobs[i:]
 
     def _complete_finished_jobs(self) -> None:
         """Retire running jobs whose ``end_time <= current_time`` and free their resources."""
