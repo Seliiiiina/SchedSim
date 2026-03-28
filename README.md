@@ -1,14 +1,21 @@
 # SchedSim
 
-A lightweight Python library for simulating and evaluating job scheduling policies in a simplified compute environment.
+SchedSim is a lightweight Python library for simulating and comparing job scheduling policies in a simplified compute environment.
 
-SchedSim provides a discrete-event simulation engine, a pluggable policy abstraction layer, and an evaluation metrics module. It lets you define jobs, choose a scheduling strategy (FIFO, SJF, Priority — or write your own), run the simulation, and inspect the results — all from Python or the command line.
+It includes three main parts: a discrete event simulation engine, a pluggable scheduling policy layer, and a metrics module for evaluating results. With SchedSim, users can define jobs, choose a scheduling policy such as FIFO, SJF, or Priority, run a simulation, and inspect the outcome through either Python code or the command line.
+
+The library is designed to be simple, modular, and easy to extend. It is useful for experimenting with scheduling behavior, comparing policy performance, and understanding how design choices affect system outcomes.
 
 ## Background
 
-This project was built as a final course project focused on software engineering practices — clean architecture, modularity, testability, and clear interfaces — rather than algorithmic complexity.
+SchedSim was originally developed as a final course project with a strong focus on software engineering rather than algorithmic complexity. The goal of the project was not to build the most advanced scheduler, but to design a clean and maintainable system with clear module boundaries, good testability, and easy extensibility.
 
-The core idea: scheduling policies should be **decoupled** from the simulation engine. The engine manages time, resources, and job lifecycle; the policy only decides *which waiting job runs next*. This separation makes it trivial to add new policies without touching the engine.
+The main idea behind the project is to separate the scheduling policy from the simulation engine. The engine is responsible for managing simulation time, tracking resource usage, and handling the lifecycle of jobs from arrival to completion. The policy, by contrast, only decides which waiting job should run next.
+
+This separation makes the system easier to understand and much easier to extend. New scheduling policies can be added without changing the core simulation logic. As a result, the project provides a small but well structured platform for studying scheduling behavior while also demonstrating important software engineering principles such as decoupling, modular design, and interface based development.
+
+SchedSim is not intended to model a full production grade cluster scheduler. Instead, it provides a simplified environment that is easy to work with, making it a practical tool for learning, experimentation, and further development.
+
 
 ## Install
 
