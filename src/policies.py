@@ -1,4 +1,15 @@
-"""Concrete scheduling policy implementations."""
+"""Concrete scheduling policy implementations.
+
+Available policies
+------------------
+FIFOPolicy
+    First-In-First-Out: jobs run in the order they arrived.
+SJFPolicy
+    Shortest-Job-First: always picks the job with the smallest duration.
+PriorityPolicy
+    Priority scheduling: picks the job with the highest priority value.
+    Ties are broken by submit_time (earlier arrival wins).
+"""
 
 from __future__ import annotations
 
@@ -7,11 +18,7 @@ from src.policy import BasePolicy
 
 
 class FIFOPolicy(BasePolicy):
-    """First-In-First-Out scheduling policy.
-
-    Always selects the job that arrived earliest (smallest submit_time).
-    Ties are broken by job_id for deterministic ordering.
-    """
+    """First-In-First-Out scheduling policy."""
 
     @property
     def name(self) -> str:
@@ -19,36 +26,11 @@ class FIFOPolicy(BasePolicy):
 
     def select_job(
         self, waiting_jobs: list[Job], current_time: int
-    ) -> Job | None:
-        return min(waiting_jobs, key=lambda j: (j.submit_time, j.job_id))
-
-
-class PriorityPolicy(BasePolicy):
-    """Priority-based scheduling policy.
-
-    Always selects the job with the highest priority value.
-    Ties are broken by submit_time (earlier arrival wins), then by job_id.
-    """
-
-    @property
-    def name(self) -> str:
-        return "Priority"
-
-    def select_job(
-        self, waiting_jobs: list[Job], current_time: int
-    ) -> Job | None:
-        return max(
-            waiting_jobs,
-            key=lambda j: (j.priority, -j.submit_time, j.job_id),
-        )
+    ) -> Job | None: ...
 
 
 class SJFPolicy(BasePolicy):
-    """Shortest-Job-First (non-preemptive) scheduling policy.
-
-    Always selects the job with the smallest duration.
-    Ties are broken by submit_time (earlier arrival wins), then by job_id.
-    """
+    """Shortest-Job-First (non-preemptive) scheduling policy."""
 
     @property
     def name(self) -> str:
@@ -56,5 +38,16 @@ class SJFPolicy(BasePolicy):
 
     def select_job(
         self, waiting_jobs: list[Job], current_time: int
-    ) -> Job | None:
-        return min(waiting_jobs, key=lambda j: (j.duration, j.submit_time, j.job_id))
+    ) -> Job | None: ...
+
+
+class PriorityPolicy(BasePolicy):
+    """Priority-based scheduling policy (higher value = higher priority)."""
+
+    @property
+    def name(self) -> str:
+        return "Priority"
+
+    def select_job(
+        self, waiting_jobs: list[Job], current_time: int
+    ) -> Job | None: ...
