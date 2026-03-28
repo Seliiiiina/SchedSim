@@ -95,7 +95,8 @@ class Simulator:
         self._available_resources = self._total_resources
 
     def _add_arrived_jobs(self) -> None:
-        """Move pending jobs whose ``submit_time <= current_time`` into the waiting queue.
+        """Move pending jobs whose ``submit_time <= current_time``
+        into the waiting queue.
 
         ``_pending_jobs`` is kept sorted by ``submit_time``, so all
         arrived jobs form a contiguous prefix — we can stop as soon as
@@ -111,7 +112,8 @@ class Simulator:
         self._pending_jobs = self._pending_jobs[i:]
 
     def _complete_finished_jobs(self) -> None:
-        """Retire running jobs whose ``end_time <= current_time`` and free their resources."""
+        """Retire running jobs whose ``end_time <= current_time``
+        and free their resources."""
         still_running: list[Job] = []
         for job in self._running_jobs:
             if job.end_time is not None and job.end_time <= self._current_time:
@@ -122,7 +124,7 @@ class Simulator:
         self._running_jobs = still_running
 
     def _start_jobs(self) -> None:
-        """Repeatedly ask the policy to fill available resource slots with waiting jobs."""
+        """Fill available resource slots with waiting jobs."""
         while self._available_resources > 0 and self._waiting_jobs:
             selected = self._policy.select_job(
                 self._waiting_jobs, self._current_time,
