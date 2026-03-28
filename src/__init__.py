@@ -2,11 +2,11 @@
 """SchedSim — a simplified job scheduling simulation library."""
 
 from src.job import Job
-from src.policy import BasePolicy
+from src.metrics import Metrics
 from src.policies import FIFOPolicy, PriorityPolicy, SJFPolicy
+from src.policy import BasePolicy
 from src.result import SimulationResult
 from src.simulator import Simulator
-from src.metrics import Metrics
 
 __all__ = [
     "Job",
@@ -16,4 +16,5 @@ __all__ = [
     "PriorityPolicy",
     "SimulationResult",
     "Simulator",
+    "Metrics",
 ]

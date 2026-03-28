@@ -25,6 +25,14 @@ class Metrics:
     makespan: int
     utilization: float
 
+    def __str__(self) -> str:
+        return (
+            f"Makespan           : {self.makespan}\n"
+            f"Avg Waiting Time   : {self.average_waiting_time:.2f}\n"
+            f"Avg Turnaround Time: {self.average_turnaround_time:.2f}\n"
+            f"Utilization        : {self.utilization:.1%}"
+        )
+
     @classmethod
     def from_result(
         cls,

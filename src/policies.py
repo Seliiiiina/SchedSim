@@ -18,7 +18,10 @@ from src.policy import BasePolicy
 
 
 class FIFOPolicy(BasePolicy):
-    """First-In-First-Out scheduling policy."""
+    """First-In-First-Out scheduling policy.
+
+    Ties in ``submit_time`` are broken by ``job_id`` for determinism.
+    """
 
     @property
     def name(self) -> str:
@@ -26,11 +29,15 @@ class FIFOPolicy(BasePolicy):
 
     def select_job(
         self, waiting_jobs: list[Job], current_time: int
-    ) -> Job | None: ...
+    ) -> Job | None:
+        return min(waiting_jobs, key=lambda j: (j.submit_time, j.job_id))
 
 
 class SJFPolicy(BasePolicy):
-    """Shortest-Job-First (non-preemptive) scheduling policy."""
+    """Shortest-Job-First (non-preemptive) scheduling policy.
+
+    Ties in ``duration`` are broken by ``submit_time`` (earlier arrival wins).
+    """
 
     @property
     def name(self) -> str:
@@ -38,7 +45,8 @@ class SJFPolicy(BasePolicy):
 
     def select_job(
         self, waiting_jobs: list[Job], current_time: int
-    ) -> Job | None: ...
+    ) -> Job | None:
+        return min(waiting_jobs, key=lambda j: (j.duration, j.submit_time))
 
 
 class PriorityPolicy(BasePolicy):
@@ -50,4 +58,5 @@ class PriorityPolicy(BasePolicy):
 
     def select_job(
         self, waiting_jobs: list[Job], current_time: int
-    ) -> Job | None: ...
+    ) -> Job | None:
+        return max(waiting_jobs, key=lambda j: (j.priority, -j.submit_time))

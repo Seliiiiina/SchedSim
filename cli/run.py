@@ -10,8 +10,8 @@ from pathlib import Path
 from src.job import Job
 from src.metrics import Metrics
 from src.policies import FIFOPolicy, PriorityPolicy, SJFPolicy
-from src.simulator import Simulator
 from src.policy import BasePolicy
+from src.simulator import Simulator
 
 POLICIES: dict[str, type[BasePolicy]] = {
     "fifo": FIFOPolicy,
