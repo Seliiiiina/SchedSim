@@ -165,28 +165,4 @@ Below is an exhaustive account of what was used, how, and what it produced.
 
 ### Tool
 
-- **Claude AI** (Anthropic) — via [Claude Code](https://claude.ai/claude-code), the CLI-based coding assistant.
-
-### How It Was Used and What It Produced
-
-| Phase | How Claude Was Used | What It Produced |
-|---|---|---|
-| **Code review** | After the core library was designed and implemented by the team, Claude was given the full codebase and asked to perform a structured review (architecture, correctness, testing, documentation). | A detailed review identifying strengths (clean policy abstraction, correct simulation logic, good test structure) and weaknesses (inconsistent tie-breaking in policies, missing policy-specific unit tests, missing metrics tests, incomplete README). |
-| **Tie-breaking fix** | Based on the review, Claude was asked to add deterministic tie-breaking to `FIFOPolicy` and `SJFPolicy`. | Changed `FIFOPolicy.select_job` to sort by `(submit_time, job_id)` and `SJFPolicy.select_job` to sort by `(duration, submit_time)`. (~4 lines changed in `src/policies.py`.) |
-| **Test coverage improvements** | Claude was asked to write missing unit tests for policies, metrics, and CLI loading. | Three new test files: `tests/test_policies.py` (15 tests), `tests/test_metrics.py` (5 tests), `tests/test_cli.py` (4 tests). Test count went from 28 to 51. |
-| **`Metrics.__str__`** | Claude added a `__str__` method to the `Metrics` dataclass for human-readable output. | ~6 lines added to `src/metrics.py`. |
-| **Packaging fix** | Claude identified that `cli/` lacked `__init__.py` and wasn't included in `pyproject.toml` packaging, and added a `[project.scripts]` console entry point. | Created `cli/__init__.py`, updated `pyproject.toml`. |
-| **README rewrite** | Claude was asked to rewrite the README following the Standard Readme specification. | Produced the current README structure (Background, Install, Usage, Extending, Project Structure, etc.). |
-
-### What Was NOT AI-Generated
-
-The following were designed and implemented entirely by the team:
-
-- Core data models (`Job`, `SimulationResult`)
-- `BasePolicy` abstract interface and Strategy pattern design
-- All three scheduling policies (FIFO, SJF, Priority)
-- Discrete-event simulation engine (`Simulator`)
-- `Metrics` evaluation module (factory method and metric formulas)
-- CLI (`cli/run.py`)
-- Original test suite (`test_simulator.py`, `test_integration.py`)
-- All Git workflow (branching, PRs, merges)
+We used Claude as a supporting tool throughout the project. It helped us refine the project idea, structure the system, and divide responsibilities between team members. During development, we used it to improve code organization, standardize naming and interfaces, and assist with debugging and edge-case validation. We also used it for high-level code review and to help organize and refine project documentation, including the README.
