@@ -1,3 +1,4 @@
+# src/policy.py
 """Abstract interface for scheduling policies."""
 
 from __future__ import annotations
@@ -14,9 +15,18 @@ class BasePolicy(ABC):
     current simulation time and the set of jobs that are ready to run.
 
     Subclasses must override :meth:`select_job`.  They may carry internal
-    state (e.g. for round-robin tracking) but should not mutate the
-    jobs or the list that is passed in.
+    state (e.g. for round-robin tracking) but must not mutate the jobs
+    or the list passed in.
     """
+
+    @property
+    def name(self) -> str:
+        """Human-readable name for this policy.
+
+        Defaults to the class name.  Override in subclasses to provide
+        a more descriptive label (e.g. ``"SJF"`` or ``"Priority"``).
+        """
+        return type(self).__name__
 
     @abstractmethod
     def select_job(
@@ -32,6 +42,7 @@ class BasePolicy(ABC):
 
         Returns:
             The selected :class:`Job`, which must be an element of
-            waiting_jobs, or ``None`` to indicate that no job should
-            be started at this time.
+            ``waiting_jobs``, or ``None`` to indicate that no job should
+            be started at this time step.
         """
+
